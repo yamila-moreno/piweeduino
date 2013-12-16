@@ -1,2 +1,3 @@
 # Byte compiled
 arduinolib/__pycache__/
+*.py[cod]
