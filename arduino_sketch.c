@@ -98,8 +98,7 @@ void loop() {
 				if (mode == 'D'){ // Digital write
 					 digital_write(pin_number, value_to_write);
                                 } else if (mode == 'A'){ // Analog write
-                                        // TO-DO: Parse the analog value to write
-					// analog_write((pin_number, analog_value);
+					 analog_write(pin_number, value_to_write);
 				} else {
 					break; // Unexpected mode
 				}
