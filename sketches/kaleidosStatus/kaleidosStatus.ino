@@ -19,7 +19,6 @@ int lightMeter = 0;
 #define LCD_OUT 6
 SoftwareSerial lcd(99, LCD_OUT);
 
-
 void setup()
 {
   Serial.begin(9600);
@@ -31,18 +30,17 @@ void loop()
     lightAVG = check_light();
     Serial.println("============> NOISE: " + noiseAVG);
     Serial.println("============> LIGHT: " + lightAVG);
-    delay(5000);    
-   
+    delay(5000);
 }
 
 int check_noise()
 {
-      Serial.println("NOISE");
+    Serial.println("NOISE");
     noiseMeter = 0;
     for(int i=0; i<=ITERATIONS; i++)
     {
-      Serial.println(max(analogRead(NOISE_SENSOR_1), analogRead(NOISE_SENSOR_2)));
-      noiseMeter = noiseMeter + max(analogRead(NOISE_SENSOR_1), analogRead(NOISE_SENSOR_2));
+        Serial.println(max(analogRead(NOISE_SENSOR_1), analogRead(NOISE_SENSOR_2)));
+        noiseMeter = noiseMeter + max(analogRead(NOISE_SENSOR_1), analogRead(NOISE_SENSOR_2));
     }
     return noiseMeter/ITERATIONS;
 }
@@ -54,7 +52,7 @@ int check_light()
     for(int i=0; i<=ITERATIONS; i++)
     {
         Serial.println(analogRead(LIGHT_SENSOR));
-      lightMeter = lightMeter + analogRead(LIGHT_SENSOR);
+        lightMeter = lightMeter + analogRead(LIGHT_SENSOR);
     }
-  return lightMeter/ITERATIONS;
+    return lightMeter/ITERATIONS;
 }
