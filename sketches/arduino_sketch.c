@@ -68,6 +68,8 @@ void analog_write(int pin_number, int analog_value){
 
 void setup() {
     Serial.begin(9600); // Serial Port at 9600 baud
+    Serial.setTimeout(100); // Instead of the default 1000ms, in order
+                            // to speed up the Serial.parseInt() 
 }
 
 
@@ -77,8 +79,7 @@ void loop() {
         operation = Serial.read();
         delay(wait_for_transmission); // If not delayed, second character is not correctly read
         mode = Serial.read();
-        pin_number = Serial.parseInt(); // Waits for an int to be transmitted, if too slow,
-        // could also be tuned with Serial.setTimeout()
+        pin_number = Serial.parseInt(); // Waits for an int to be transmitted
         if (Serial.read()==':'){
             value_to_write = Serial.parseInt(); // Collects the value to be written
         }
