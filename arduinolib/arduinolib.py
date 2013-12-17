@@ -7,7 +7,7 @@ import serial
 
 class Arduino():
     """
-    Represents an Arduino connection
+    Models an Arduino connection
     """
 
     def __init__(self, serial_port='/dev/ttyACM0', baud_rate=9600,
@@ -17,6 +17,17 @@ class Arduino():
         """
         self.conn = serial.Serial(serial_port, baud_rate) 
         self.conn.timeout = read_timeout # Timeout for readline() 
+
+    def set_pin_mode(self, pin_number, mode):
+        """
+        Performs a pinMode() operation on pin_number
+        Internally sends b'M{mode}{pin_number} where mode could be:
+        - I for INPUT
+        - O for OUTPUT
+        - P for INPUT_PULLUP
+        """
+        command = (''.join(('M',mode,str(pin_number)))).encode()
+        self.conn.write(command)
 
     def digital_read(self, pin_number):
         """
@@ -70,9 +81,12 @@ if __name__ == '__main__':
     import time
 
     a = Arduino()
-    time.sleep(5)
+    time.sleep(3)
+    a.set_pin_mode(13,'O')
+    a.set_pin_mode(12,'I')
+    time.sleep(1)
     a.digital_write(13,1)
     a.analog_write(5,245)
-    time.sleep(2)
     print(a.digital_read(12))
     print(a.analog_read(2))
+    time.sleep(5)

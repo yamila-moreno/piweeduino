@@ -21,6 +21,27 @@ int analog_value; // Holds the analog value
 int value_to_write; // Holds the value that we want to write
 int wait_for_transmission = 5; // Delay in ms in order to receive the serial data
 
+void set_pin_mode(int pin_number, char mode){
+    /*
+     * Performs a pinMode() operation depending on the value of the parameter
+     * mode :
+     * - I: Sets the mode to INPUT
+     * - O: Sets the mode to OUTPUT
+     * - P: Sets the mode to INPUT_PULLUP
+     */
+
+    switch (mode){
+        case 'I':
+            pinMode(pin_number, INPUT);
+            break;
+        case 'O':
+            pinMode(pin_number, OUTPUT);
+            break;
+        case 'P':
+            pinMode(pin_number, INPUT_PULLUP);
+            break;
+    }
+}
 
 void digital_read(int pin_number){
     /*
@@ -28,7 +49,6 @@ void digital_read(int pin_number){
      * in this format: D{pin_number}:{value}\n where value can be 0 or 1
      */
 
-    pinMode(pin_number, INPUT);
     digital_value = digitalRead(pin_number);
     Serial.print('D');
     Serial.print(pin_number);
@@ -54,7 +74,6 @@ void digital_write(int pin_number, int digital_value){
      * Performs a digital write on pin_number with the digital_value
      * The value must be 1 or 0
      */
-    pinMode(pin_number, OUTPUT);
 	digitalWrite(pin_number, digital_value);
 }
 
@@ -93,6 +112,7 @@ void loop() {
 					break; // Unexpected mode
 				}
                 break;
+
             case 'W': // Write operation, e.g. WD3:1, WA8:255
                 if (mode == 'D'){ // Digital write
                     digital_write(pin_number, value_to_write);
@@ -101,6 +121,10 @@ void loop() {
                 } else {
                     break; // Unexpected mode
                 }
+                break;
+
+            case 'M': // Pin mode, e.g. MI3, MO3, MP3
+                set_pin_mode(pin_number, mode); // Mode contains I, O or P (INPUT, OUTPUT or PULLUP_INPUT)
                 break;
 
             default: // Unexpected char
