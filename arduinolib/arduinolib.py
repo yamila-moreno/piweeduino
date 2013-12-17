@@ -15,8 +15,8 @@ class Arduino():
         """
         Initializes the serial connection to the Arduino board
         """
-        self.conn = serial.Serial(serial_port, baud_rate) 
-        self.conn.timeout = read_timeout # Timeout for readline() 
+        self.conn = serial.Serial(serial_port, baud_rate)
+        self.conn.timeout = read_timeout # Timeout for readline()
 
     def set_pin_mode(self, pin_number, mode):
         """
@@ -35,7 +35,7 @@ class Arduino():
         Internally sends b'RD{pin_number}' over the serial connection
         """
         command = (''.join(('RD', str(pin_number)))).encode()
-        self.conn.write(command) 
+        self.conn.write(command)
         line_received = self.conn.readline().decode().strip()
         header, value = line_received.split(':') # e.g. D13:1
         if header == ('D'+ str(pin_number)):
@@ -77,7 +77,7 @@ class Arduino():
 
 
 if __name__ == '__main__':
-    
+
     import time
 
     a = Arduino()
