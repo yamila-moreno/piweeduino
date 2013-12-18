@@ -5,15 +5,19 @@
 
 #define ITERATIONS 5
 
-char buffer[200];
-
 //NOISE
-#define NOISE_SENSOR_1 A2
-#define NOISE_SENSOR_2 A4
+#define NOISE_SENSOR A2
 #define THRESHOLD_GREEN 200
 #define THRESHOLD_RED 500
 int noiseAVG = 0;
 int noiseMeter = 0;
+
+//TEMPERATURE
+#define TEMP_SENSOR A4
+int B = 3975;
+float resistance;
+float temperature;
+int a = 0;
 
 //LIGHT
 #define LIGHT_SENSOR A6
@@ -25,13 +29,6 @@ AirQuality airqualitysensor;
 int current_quality = -1;
 int airPol = 0;
 
-//TEMPERATURE
-#define TEMP_SENSOR A8
-int B = 3975;
-float resistance;
-float temperature;
-int a = 0;
-
 //LCD
 #define LCD_OUT 6
 SoftwareSerial lcd(99, LCD_OUT);
@@ -39,7 +36,7 @@ SoftwareSerial lcd(99, LCD_OUT);
 void setup()
 {
     Serial.begin(9600);
-    airqualitysensor.init(A1);
+    airqualitysensor.init(A1, A0);
 }
 
 void loop()
@@ -48,13 +45,16 @@ void loop()
     lightAVG = check_light();
     airPol = check_air();
     temperature = check_temperature();
+    Serial.println("**********************************");
     Serial.print("============> NOISE: ");
     Serial.println(noiseAVG);
     Serial.print("============> LIGHT: ");
     Serial.println(lightAVG);
     Serial.print("============> AIR: ");
     Serial.println(airPol);
-    
+    Serial.print("============> TEMPERATURE: ");
+    Serial.println(temperature);
+
     delay(5000);
 }
 
@@ -63,7 +63,7 @@ int check_noise()
     noiseMeter = 0;
     for(int i=0; i<=ITERATIONS; i++)
     {
-        noiseMeter = noiseMeter + max(analogRead(NOISE_SENSOR_1), analogRead(NOISE_SENSOR_2));
+        noiseMeter = noiseMeter + analogRead(NOISE_SENSOR);
     }
     return noiseMeter/ITERATIONS;
 }
@@ -80,7 +80,7 @@ int check_light()
 
 int check_air()
 {
-    current_quality=airqualitysensor.slope();    
+    current_quality=airqualitysensor.slope();
     return current_quality;
 }
 

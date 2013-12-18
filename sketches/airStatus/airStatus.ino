@@ -1,6 +1,6 @@
 /*
   AirQuality Demo V1.0.
-  connect to A1 to start testing. it will needs about 20s to start 
+  connect to A1 to start testing. it will needs about 20s to start
 * By: http://www.seeedstudio.com
 */
 #include"AirQuality.h"
