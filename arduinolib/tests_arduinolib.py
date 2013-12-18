@@ -176,7 +176,6 @@ class TestArduinoMethods(unittest.TestCase):
         """
 
         for pin,value in zip(self.analog_in_pins, self.analog_in_values):
-            print(pin, value)
             res = self.ar.analog_read(pin)
             self.assertEqual(self.ar.conn.last_written, 'RA{}'.format(pin).encode())
             self.assertEqual(res, value)
