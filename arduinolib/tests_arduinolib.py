@@ -84,6 +84,7 @@ class TestArduinoMethods(unittest.TestCase):
         self.pwm_pins = [3,5,6,9,10,11]
         self.analog_in_pins = range(0,6)
         self.analog_in_values = [122, 384, 276, 768, 1022, 512]
+        self.pin_modes = ['I', 'O', 'P']
 
     def test_digital_write(self):
         """
@@ -179,6 +180,16 @@ class TestArduinoMethods(unittest.TestCase):
             res = self.ar.analog_read(pin)
             self.assertEqual(self.ar.conn.last_written, 'RA{}'.format(pin).encode())
             self.assertEqual(res, value)
+    
+    def test_set_pin_mode(self):
+        """
+        Tests setting the pin mode for the digital pins
+        """
+        for pin in self.digital_pins:
+                for mode in self.pin_modes:
+                    self.ar.set_pin_mode(pin, mode)
+                    self.assertEqual(self.ar.conn.last_written,
+                            'M{}{}'.format(mode, pin).encode())
 
 if __name__ =='__main__':
     unittest.main()
