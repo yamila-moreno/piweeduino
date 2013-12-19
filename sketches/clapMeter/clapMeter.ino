@@ -1,5 +1,4 @@
 #include <SoftwareSerial.h>
-#include "words.h"
 
 #define SOUND_SENSOR A0
 #define SOUND_SENSOR_2 A2
@@ -10,6 +9,7 @@
 #define LCD_OUT 8
 
 #include <SPI.h>
+#include "bars.h"
 
 #define RowA 2
 #define RowB 3
@@ -22,70 +22,9 @@
 
 byte row=0;
 
+byte *hz;
+
 byte hz1[] =
-{
-  //[16*16]
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0xFF,0xFF,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-  //[16*16]
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0xFF,0xFF,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-0x00,0x00,
-};
-
-
-byte hz2[] =
-{
-  //[16*16]
-0x00,0x00,
-0x04,0x80,
-0x04,0x80,
-0x05,0xFE,
-0x09,0x02,
-0x0A,0x04,
-0x18,0x20,
-0x28,0x20,
-0x08,0xA8,
-0x08,0xA4,
-0x09,0x24,
-0x09,0x22,
-0x0A,0x22,
-0x08,0x20,
-0x08,0xE0,
-0x00,0x00,
-  //[16*16]
-0x00,0x00,0x10,0x00,0x11,0xF8,0x10,0x08,0x7C,0x10,0x24,0x20,0x24,0x20,0x25,0xFC,
-0x44,0x20,0x24,0x20,0x18,0x20,0x08,0x20,0x14,0x20,0x24,0x20,0x40,0xE0,0x00,0x00
-};
-
-byte hz[] =
 {
   //[16*16]
 0x00,0x00,
@@ -121,34 +60,88 @@ int sensor_2 = 0;
 SoftwareSerial lcd(99, LCD_OUT);
 
 
-#define DBNORM 70
+#define DBNORM 140
 
 void setHistogram(int value){
 
      int normValue = value/DBNORM;
      normValue = min(normValue*2,32);
+     if (normValue == 0){
+      hz = zero; 
+     }
+     else if (normValue == 1){
+      hz = one; 
+     }
+     else if (normValue == 2){
+      hz = two; 
+     }
+     else if (normValue == 3){
+      hz = three; 
+     }
+     else if (normValue == 4){
+      hz = four; 
+     }
+     else if (normValue == 5){
+      hz = five; 
+     }
+     else if (normValue == 6){
+      hz = six; 
+     }
+     else if (normValue == 7){
+      hz = seven; 
+     }
+     else if (normValue == 8){
+      hz = eight; 
+     }
+     else if (normValue == 9){
+      hz = nine; 
+     }
+     else if (normValue == 10){
+      hz = ten; 
+     }
+     else if (normValue == 11){
+      hz = eleven; 
+     }
+     else if (normValue == 12){
+      hz = twelve; 
+     }
+     else if (normValue == 13){
+      hz = thirteen; 
+     }
+     else if (normValue == 14){
+      hz = fourteen; 
+     }
+     else if (normValue == 15){
+      hz = fifteen; 
+     }
+     else if (normValue == 16){
+      hz = sixteen; 
+     }
+     else {
+      hz = sixteen; 
+     }
+
+
+
      //Serial.println(hz.size);
      
-     for (int i=0;i<64;i++){
-         hz1[i] = 0x00; 
-     }
-     
+ 
+/**     
      for (int i=0;i<64;i++){
      	 if (i<normValue){
-     	     hz1[i] = 0xFF;
+     	     hz1[i] = ~0xFF;
      }
          else if(i>32 && i<normValue+32){
-     	     hz1[i] = 0xFF;
+     	     hz1[i] = ~0xFF;
      	 }
          else{
-             hz1[i] = 0x00;
+             hz1[i] = ~0x00;
          }
-	 }
-     
 
-     for (int i=0;i<64;i++){
-      Serial.print(hz1[i],HEX); 
-     }
+	 }
+  */   
+
+
 }
 void setup()
 {
@@ -179,11 +172,11 @@ void setup()
 void loop()
 {
     
-     sensor = analogRead(SOUND_SENSOR);
-//    sensor_2 = analogRead(SOUND_SENSOR_2);
+    sensor = analogRead(SOUND_SENSOR);
+    sensor_2 = analogRead(SOUND_SENSOR_2);
 
 //    sensor = 300;
-    sensor_2 = 300;
+//    sensor_2 = 300;
     if(min(sensor,sensor_2) > 0)
     {
         sensorValue = max(sensor, sensor_2);
@@ -193,8 +186,8 @@ void loop()
 
   for(row=0;row<16;row++){
        for (int i=0;i<2;i++){
-         SPI.transfer(~(hz1[i*32+row*2]));
-         SPI.transfer(~(hz1[i*32+row*2+1]));
+         SPI.transfer(~(hz[i*32+row*2]));
+         SPI.transfer(~(hz[i*32+row*2+1]));
   }
   digitalWrite(OE,HIGH);
   hc138sacn(row);
