@@ -49,17 +49,17 @@ void setup () {
 }
 
 void loop(){
-  for(row=0;row<16;row++){
-       for (int i=0;i<2;i++){
-         SPI.transfer(~(win[i*32+row*2]));
-         SPI.transfer(~(win[i*32+row*2+1]));
-  }
-  digitalWrite(OE,HIGH);
-  hc138sacn(row);
-  digitalWrite(STB,LOW);
-  digitalWrite(STB,HIGH);
-  delayMicroseconds(500);
-  digitalWrite(OE,LOW);
-  delayMicroseconds(500);
-  }
+    for(row=0;row<16;row++){
+        for (int i=0;i<2;i++){
+            SPI.transfer(~(fail[i*32+row*2]));
+            SPI.transfer(~(fail[i*32+row*2+1]));
+        }
+        digitalWrite(OE,HIGH);
+        hc138sacn(row);
+        digitalWrite(STB,LOW);
+        digitalWrite(STB,HIGH);
+        delayMicroseconds(500);
+        digitalWrite(OE,LOW);
+        delayMicroseconds(500);
+    }
 }
