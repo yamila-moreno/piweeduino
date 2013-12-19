@@ -18,7 +18,7 @@
 
 #define SOUND_SENSOR A0
 #define SOUND_SENSOR_2 A2
-#define THRESHOLD_FAIL 200 //The threshold to turn the led on 400.00*5/1024 = 1.95v
+#define THRESHOLD_FAIL 400 //The threshold to turn the led on 400.00*5/1024 = 1.95v
 #define THRESHOLD_GOOD 400
 #define THRESHOLD_WIN 600
 
@@ -38,12 +38,12 @@ byte row=0;
 byte *hz;
 byte *wordresult;
 int sensorValue;
-int average;
 int counter = 0;
-boolean clapMeterOn = false;
 double clapMeter = 0;
 int sensor = 0;
 int sensor_2 = 0;
+int goodClap = 0;
+int badClap = 0;
 int result = 0;
 boolean scanning = true;
 SoftwareSerial lcd(99, LCD_OUT);
@@ -77,11 +77,8 @@ void setup()
 
 void loop()
 {
-
     if(scanning){
-        scanning = false;
-        //result = scanClaps();
-        result = 700;
+        result = scanClaps();
     }else{
         showResult();
     }
@@ -93,7 +90,7 @@ void showResult(){
         Serial.println("WIN");
     } else if (result >= THRESHOLD_GOOD){
         wordresult = good;
-        Serial.println("GOOD");
+        Serial.println("GOOD"); 
     } else {
         wordresult = fail;
         Serial.println("FAIL");
@@ -114,12 +111,34 @@ void showResult(){
 }
 
 int scanClaps(){
-    sensor = analogRead(SOUND_SENSOR);
-    sensor_2 = analogRead(SOUND_SENSOR_2);
+    boolean keep = true;
+    while(keep){
+        sensor = analogRead(SOUND_SENSOR);
+        sensor_2 = analogRead(SOUND_SENSOR_2);
+        if(min(sensor,sensor_2) > 0){
+            sensorValue = max(sensor, sensor_2);
+            if(sensorValue > THRESHOLD_FAIL){
+                clapMeter = clapMeter + sensorValue;
+                goodClap++;
+            } else {
+                if(badClap<100){
+                    badClap++;
+                } else {
+                    keep = false;
+                }
+            }
 
-    if(min(sensor,sensor_2) > 0)
-    {
-        sensorValue = max(sensor, sensor_2);
+        }
+    }
+
+    result = clapMeter/goodClap;
+    goodClap = 0;
+    badClap = 0;
+    scanning = false;
+
+    return result;
+}
+
         /*
         setHistogram(sensorValue);
 
@@ -138,28 +157,6 @@ int scanClaps(){
         }
         */
 
-        if(sensorValue > THRESHOLD_FAIL)
-        {
-            clapMeterOn = true;
-            clapMeter = clapMeter + sensorValue;
-            counter++;
-        }
-   }
-   if (clapMeterOn == true && sensorValue < 50)
-   {
-        average = clapMeter/counter;
-        Serial.println("FIN DEL CONTEO");
-        Serial.println(average);
-        clapMeterOn = false;
-        //show_results
-
-        counter = 0;
-        clapMeter = 0;
-    }
-
-    scanning = false;
-
-}
 
 void lcd_init()
 {
