@@ -14,7 +14,7 @@
 */
 
 #include <SPI.h>
-#include "words.h"
+#include "proof.h"
 
 #define RowA 2
 #define RowB 3
@@ -50,10 +50,10 @@ void setup () {
 
 void loop(){
     for(row=0;row<16;row++){
-        for (int i=0;i<2;i++){
-            SPI.transfer(~(muxu[i*32+row*2]));
-            SPI.transfer(~(muxu[i*32+row*2+1]));
-        }
+        SPI.transfer(~(win[0+row*4]));
+        SPI.transfer(~(win[1+row*4]));
+        SPI.transfer(~(win[2+row*4]));
+        SPI.transfer(~(win[3+row*4]));
         digitalWrite(OE,HIGH);
         hc138sacn(row);
         digitalWrite(STB,LOW);
