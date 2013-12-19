@@ -1,4 +1,5 @@
 #include <SoftwareSerial.h>
+#include "words.h"
 
 #define SOUND_SENSOR A0
 #define SOUND_SENSOR_2 A2
