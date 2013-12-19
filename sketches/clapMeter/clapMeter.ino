@@ -1,15 +1,29 @@
+/*
+  The circuit:
+  * A connect to digital 2
+  * B connect to digital 3
+  * C connect to digital 4
+  * D connect to digital 5
+  * OE connect to digital 6
+  * STB connect to digital 10
+  * R1 connect to digital 11
+  * CLK connect to digital 13
+  * GND connect to GND
+*/
+
+
 #include <SoftwareSerial.h>
+#include <SPI.h>
+#include "bars.h"
+#include "words.h"
 
 #define SOUND_SENSOR A0
 #define SOUND_SENSOR_2 A2
-#define GREEN 2      // the number of the LED pin
-#define RED 3
-#define THRESHOLD_GREEN 200//The threshold to turn the led on 400.00*5/1024 = 1.95v
-#define THRESHOLD_RED 500
+#define THRESHOLD_FAIL 200//The threshold to turn the led on 400.00*5/1024 = 1.95v
+#define THRESHOLD_GOOD 400
+#define THRESHOLD_WIN 600
 #define LCD_OUT 8
 
-#include <SPI.h>
-#include "bars.h"
 
 #define RowA 2
 #define RowB 3
@@ -23,31 +37,6 @@
 byte row=0;
 
 byte *hz;
-
-byte hz1[] =
-{
-  //[16*16]
-0x00,0x00,
-0x04,0x80,
-0x04,0x80,
-0x05,0xFE,
-0x09,0x02,
-0x0A,0x04,
-0x18,0x20,
-0x28,0x20,
-0x08,0xA8,
-0x08,0xA4,
-0x09,0x24,
-0x09,0x22,
-0x0A,0x22,
-0x08,0x20,
-0x08,0xE0,
-0x00,0x00,
-  //[16*16]
-0x00,0x00,0x10,0x00,0x11,0xF8,0x10,0x08,0x7C,0x10,0x24,0x20,0x24,0x20,0x25,0xFC,
-0x44,0x20,0x24,0x20,0x18,0x20,0x08,0x20,0x14,0x20,0x24,0x20,0x40,0xE0,0x00,0x00
-};
-
 
 int sensorValue;
 
@@ -67,190 +56,177 @@ void setHistogram(int value){
      int normValue = value/DBNORM;
      normValue = min(normValue*2,32);
      if (normValue == 0){
-      hz = zero; 
+      hz = zero;
      }
      else if (normValue == 1){
-      hz = one; 
+      hz = one;
      }
      else if (normValue == 2){
-      hz = two; 
+      hz = two;
      }
      else if (normValue == 3){
-      hz = three; 
+      hz = three;
      }
      else if (normValue == 4){
-      hz = four; 
+      hz = four;
      }
      else if (normValue == 5){
-      hz = five; 
+      hz = five;
      }
      else if (normValue == 6){
-      hz = six; 
+      hz = six;
      }
      else if (normValue == 7){
-      hz = seven; 
+      hz = seven;
      }
      else if (normValue == 8){
-      hz = eight; 
+      hz = eight;
      }
      else if (normValue == 9){
-      hz = nine; 
+      hz = nine;
      }
      else if (normValue == 10){
-      hz = ten; 
+      hz = ten;
      }
      else if (normValue == 11){
-      hz = eleven; 
+      hz = eleven;
      }
      else if (normValue == 12){
-      hz = twelve; 
+      hz = twelve;
      }
      else if (normValue == 13){
-      hz = thirteen; 
+      hz = thirteen;
      }
      else if (normValue == 14){
-      hz = fourteen; 
+      hz = fourteen;
      }
      else if (normValue == 15){
-      hz = fifteen; 
+      hz = fifteen;
      }
      else if (normValue == 16){
-      hz = sixteen; 
+      hz = sixteen;
      }
      else {
-      hz = sixteen; 
+      hz = sixteen;
      }
-
-
-
-     //Serial.println(hz.size);
-     
- 
-/**     
-     for (int i=0;i<64;i++){
-     	 if (i<normValue){
-     	     hz1[i] = ~0xFF;
-     }
-         else if(i>32 && i<normValue+32){
-     	     hz1[i] = ~0xFF;
-     	 }
-         else{
-             hz1[i] = ~0x00;
-         }
-
-	 }
-  */   
-
-
 }
 void setup()
 {
 
-  
+
     Serial.begin(9600);
     pins_init();
-    //Serial.println("HHHA");
+
     pinMode(LCD_OUT, OUTPUT);
     lcd.begin(9600);
-  
     lcd_init();
-    lcd.print("HOLA");
 
-     pinMode(RowA, OUTPUT);
-     pinMode(RowB, OUTPUT);
-     pinMode(RowC, OUTPUT);
-     pinMode(RowD, OUTPUT);
-     pinMode(OE, OUTPUT);
-     pinMode(R1, OUTPUT);
-     pinMode(CLK, OUTPUT);
-     pinMode(STB, OUTPUT);
-     SPI.begin();
-     delay(10);
+    pinMode(RowA, OUTPUT);
+    pinMode(RowB, OUTPUT);
+    pinMode(RowC, OUTPUT);
+    pinMode(RowD, OUTPUT);
+    pinMode(OE, OUTPUT);
+    pinMode(R1, OUTPUT);
+    pinMode(CLK, OUTPUT);
+    pinMode(STB, OUTPUT);
+    SPI.begin();
+    delay(10);
 
 }
 
 void loop()
 {
-    
+
     sensor = analogRead(SOUND_SENSOR);
     sensor_2 = analogRead(SOUND_SENSOR_2);
 
-//    sensor = 300;
-//    sensor_2 = 300;
     if(min(sensor,sensor_2) > 0)
     {
         sensorValue = max(sensor, sensor_2);
         setHistogram(sensorValue);
-  //SPI.begin();
-  //delay(100);
 
-  for(row=0;row<16;row++){
-       for (int i=0;i<2;i++){
-         SPI.transfer(~(hz[i*32+row*2]));
-         SPI.transfer(~(hz[i*32+row*2+1]));
-  }
-  digitalWrite(OE,HIGH);
-  hc138sacn(row);
-  digitalWrite(STB,LOW);
-  digitalWrite(STB,HIGH);
-  delayMicroseconds(500);
-  digitalWrite(OE,LOW);
-  delayMicroseconds(500);
-  
-  }
-  
-  Serial.print("sensorValue ");
-  Serial.println(sensorValue);
-       
-    if(sensorValue > THRESHOLD_GREEN)
-        {
-            turnOnLED(GREEN);
-
-            if(counter==0){
-                //Serial.println("********************* INICIO APLAUSOMETRO");
+        for(row=0;row<16;row++){
+            for (int i=0;i<2;i++){
+                SPI.transfer(~(hz[i*32+row*2]));
+                SPI.transfer(~(hz[i*32+row*2+1]));
             }
+            digitalWrite(OE,HIGH);
+            hc138sacn(row);
+            digitalWrite(STB,LOW);
+            digitalWrite(STB,HIGH);
+            delayMicroseconds(500);
+            digitalWrite(OE,LOW);
+            delayMicroseconds(500);
+        }
+
+        if(sensorValue > THRESHOLD_FAIL)
+        {
             clapMeterOn = true;
             clapMeter = clapMeter + sensorValue;
             counter++;
         }
-        if(sensorValue > THRESHOLD_RED)
-        {
-            turnOnLED(RED);
-        }
-        //delay(500);
-        turnOffLEDS();
-    
-    if (clapMeterOn == true && sensorValue < 50)
-    {
+   }
+   if (clapMeterOn == true && sensorValue < 50)
+   {
         average = clapMeter/counter;
         clapMeterOn = false;
-        //Serial.println("HA SALIDO ===============> ");
-        //Serial.println(average);
-        lcd_blink(average);
+        if (average >= THRESHOLD_WIN)
+        {
+            Serial.println("WIN");
+            for (row=0;row<16;row++){
+                for (int i=0;i<2;i++){
+                    SPI.transfer(~(win[i*32+row*2]));
+                    SPI.transfer(~(win[i*32+row*2+1]));
+                }
+                digitalWrite(OE,HIGH);
+                hc138sacn(row);
+                digitalWrite(STB,LOW);
+                digitalWrite(STB,HIGH);
+                delayMicroseconds(500);
+                digitalWrite(OE,LOW);
+                delayMicroseconds(500);
+            }
+        } else if (average >= THRESHOLD_GOOD){
+            Serial.println("GOOD");
+            for (row=0;row<16;row++){
+                for (int i=0;i<2;i++){
+                    SPI.transfer(~(good[i*32+row*2]));
+                    SPI.transfer(~(good[i*32+row*2+1]));
+                }
+                digitalWrite(OE,HIGH);
+                hc138sacn(row);
+                digitalWrite(STB,LOW);
+                digitalWrite(STB,HIGH);
+                delayMicroseconds(500);
+                digitalWrite(OE,LOW);
+                delayMicroseconds(500);
+            }
+         } else {
+            Serial.println("FAIL");
+            for (row=0;row<16;row++){
+                for (int i=0;i<2;i++){
+                    SPI.transfer(~(fail[i*32+row*2]));
+                    SPI.transfer(~(fail[i*32+row*2+1]));
+                }
+                digitalWrite(OE,HIGH);
+                hc138sacn(row);
+                digitalWrite(STB,LOW);
+                digitalWrite(STB,HIGH);
+                delayMicroseconds(500);
+                digitalWrite(OE,LOW);
+                delayMicroseconds(500);
+            }
+        }
+
         counter = 0;
         clapMeter = 0;
-        //delay(1000);
-    }
     }
 
 }
 
 void pins_init()
 {
-    pinMode(GREEN, OUTPUT);
-    pinMode(RED, OUTPUT);
     pinMode(SOUND_SENSOR, INPUT);
-}
-
-void turnOnLED(int led)
-{
-    digitalWrite(led,HIGH);
-}
-
-void turnOffLEDS()
-{
-    digitalWrite(RED,LOW);
-    digitalWrite(GREEN,LOW);
 }
 
 void lcd_init()
