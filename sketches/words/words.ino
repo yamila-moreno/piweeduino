@@ -51,8 +51,8 @@ void setup () {
 void loop(){
     for(row=0;row<16;row++){
         for (int i=0;i<2;i++){
-            SPI.transfer(~(fail[i*32+row*2]));
-            SPI.transfer(~(fail[i*32+row*2+1]));
+            SPI.transfer(~(muxu[i*32+row*2]));
+            SPI.transfer(~(muxu[i*32+row*2+1]));
         }
         digitalWrite(OE,HIGH);
         hc138sacn(row);
