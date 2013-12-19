@@ -1,4 +1,9 @@
 /*
+LCD - no combina bien con pintar tambien en la matrix porque no se refresca bien
+SENSORES - los probamos en la ofi por no andar gritando en casa
+BARRAS
+MEJORAR PALABRAS
+
   The circuit:
   * A connect to digital 2
   * B connect to digital 3
@@ -18,11 +23,9 @@
 
 #define SOUND_SENSOR A0
 #define SOUND_SENSOR_2 A2
-#define THRESHOLD_FAIL 400 //The threshold to turn the led on 400.00*5/1024 = 1.95v
-#define THRESHOLD_GOOD 400
-#define THRESHOLD_WIN 600
-
-#define LCD_OUT 8
+#define THRESHOLD_FAIL 100 //The threshold to turn the led on 400.00*5/1024 = 1.95v
+#define THRESHOLD_GOOD 200
+#define THRESHOLD_WIN 300
 
 #define RowA 2
 #define RowB 3
@@ -46,16 +49,10 @@ int goodClap = 0;
 int badClap = 0;
 int result = 0;
 boolean scanning = true;
-SoftwareSerial lcd(99, LCD_OUT);
 
 void setup()
 {
     Serial.begin(9600);
-
-    // INIT LCD
-    pinMode(LCD_OUT, OUTPUT);
-    lcd.begin(9600);
-    lcd_init();
 
     // INIT SOUND SENSORS
     pinMode(SOUND_SENSOR, INPUT);
@@ -120,11 +117,24 @@ int scanClaps(){
             if(sensorValue > THRESHOLD_FAIL){
                 clapMeter = clapMeter + sensorValue;
                 goodClap++;
+                //setHistogram(sensorValue);
+                hz = zero;
+                for(row=0;row<16;row++){
+                    for (int i=0;i<2;i++){
+                        SPI.transfer(~(hz[i*32+row*2]));
+                        SPI.transfer(~(hz[i*32+row*2+1]));
+                    }
+                    digitalWrite(OE,HIGH);
+                    hc138sacn(row);
+                    digitalWrite(STB,LOW);
+                    digitalWrite(STB,HIGH);
+                    digitalWrite(OE,LOW);
+                }
             } else {
                 if(badClap<100){
                     badClap++;
                 } else {
-                    keep = false;
+                    //keep = false;
                 }
             }
 
@@ -137,42 +147,6 @@ int scanClaps(){
     scanning = false;
 
     return result;
-}
-
-        /*
-        setHistogram(sensorValue);
-
-        for(row=0;row<16;row++){
-            for (int i=0;i<2;i++){
-                SPI.transfer(~(hz[i*32+row*2]));
-                SPI.transfer(~(hz[i*32+row*2+1]));
-            }
-            digitalWrite(OE,HIGH);
-            hc138sacn(row);
-            digitalWrite(STB,LOW);
-            digitalWrite(STB,HIGH);
-            delayMicroseconds(500);
-            digitalWrite(OE,LOW);
-            delayMicroseconds(500);
-        }
-        */
-
-
-void lcd_init()
-{
-    lcd.write(0XFE);
-    lcd.write(0X01);
-
-}
-
-void lcd_blink(int value)
-{
-    for(int i=0; i<=10; i++){
-        lcd_init();
-        //delay(200);
-        lcd.print(value);
-        //delay(200);
-    }
 }
 
 void hc138sacn(byte r){
@@ -209,7 +183,7 @@ void setHistogram(int value){
       hz = six;
      }
      else if (normValue == 7){
-      hz = seven;
+      hz =  seven;
      }
      else if (normValue == 8){
       hz = eight;
