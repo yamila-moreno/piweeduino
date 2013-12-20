@@ -1,8 +1,8 @@
 /*
 LCD - no combina bien con pintar tambien en la matrix porque no se refresca bien
-SENSORES - los probamos en la ofi por no andar gritando en casa
 MEJORAR PALABRAS - YA SE PUEDE PONER CUALQUIER STRING
-BARRAS - ESTAN COMENTADAS PORQUE EL SETHISTOGRAM NO DA ERROR PERO GENERA FALLO DE FUNCIONAMIENTO
+SENSORES - los probamos en la ofi por no andar gritando en casa
+BARRAS - 
 
   The circuit:
   * A connect to digital 2
@@ -23,9 +23,9 @@ BARRAS - ESTAN COMENTADAS PORQUE EL SETHISTOGRAM NO DA ERROR PERO GENERA FALLO D
 
 #define SOUND_SENSOR A0
 #define SOUND_SENSOR_2 A2
-#define THRESHOLD_FAIL 100 //The threshold to turn the led on 400.00*5/1024 = 1.95v
-#define THRESHOLD_GOOD 200
-#define THRESHOLD_WIN 300
+#define THRESHOLD_FAIL 200 //The threshold to turn the led on 400.00*5/1024 = 1.95v
+#define THRESHOLD_GOOD 400
+#define THRESHOLD_WIN 600
 
 #define RowA 2
 #define RowB 3
@@ -35,7 +35,7 @@ BARRAS - ESTAN COMENTADAS PORQUE EL SETHISTOGRAM NO DA ERROR PERO GENERA FALLO D
 #define R1 11
 #define CLK 13
 #define STB 10
-#define DBNORM 140
+#define DBNORM 80
 
 byte row=0;
 byte *hz;
@@ -82,6 +82,8 @@ void loop()
 
 void showResult(){
     String phraseResult = "    ";
+    phraseResult.concat(result);
+    phraseResult.concat(": ");
     if (result >= THRESHOLD_WIN){
         phraseResult.concat("YOU ARE A TOTAL WINNER");
     } else if (result >= THRESHOLD_GOOD){
@@ -142,8 +144,9 @@ int scanClaps(){
             if(sensorValue > THRESHOLD_FAIL){
                 clapMeter = clapMeter + sensorValue;
                 goodClap++;
-                //setHistogram(sensorValue);
-                /*for(row=0;row<16;row++){
+                /*
+                setHistogram(sensorValue);
+                for(row=0;row<16;row++){
                     SPI.transfer(~(hz[0+row*4]));
                     SPI.transfer(~(hz[1+row*4]));
                     SPI.transfer(~(hz[2+row*4]));
@@ -153,10 +156,13 @@ int scanClaps(){
                     hc138sacn(row);
                     digitalWrite(STB,LOW);
                     digitalWrite(STB,HIGH);
+                    delayMicroseconds(500);
                     digitalWrite(OE,LOW);
-                }*/
+                    delayMicroseconds(500);
+                }
+                */
             } else {
-                if(badClap<10){
+                if(badClap<5){
                     badClap++;
                 } else {
                     keep = false;
@@ -188,52 +194,16 @@ void setHistogram(int value){
      if (normValue == 0){
       hz = zero;
      }
-     else if (normValue == 1){
-      hz = one;
-     }
-     else if (normValue == 2){
-      hz = two;
-     }
-     else if (normValue == 3){
-      hz = three;
-     }
-     else if (normValue == 4){
+     else if (normValue <= 4){
       hz = four;
      }
-     else if (normValue == 5){
-      hz = five;
-     }
-     else if (normValue == 6){
-      hz = six;
-     }
-     else if (normValue == 7){
-      hz =  seven;
-     }
-     else if (normValue == 8){
+     else if (normValue <= 8){
       hz = eight;
      }
-     else if (normValue == 9){
-      hz = nine;
-     }
-     else if (normValue == 10){
-      hz = ten;
-     }
-     else if (normValue == 11){
-      hz = eleven;
-     }
-     else if (normValue == 12){
+     else if (normValue <= 12){
       hz = twelve;
      }
-     else if (normValue == 13){
-      hz = thirteen;
-     }
-     else if (normValue == 14){
-      hz = fourteen;
-     }
-     else if (normValue == 15){
-      hz = fifteen;
-     }
-     else if (normValue == 16){
+     else if (normValue <= 16){
       hz = sixteen;
      }
      else {
