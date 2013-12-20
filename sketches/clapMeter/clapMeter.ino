@@ -2,7 +2,7 @@
 LCD - no combina bien con pintar tambien en la matrix porque no se refresca bien
 MEJORAR PALABRAS - YA SE PUEDE PONER CUALQUIER STRING
 SENSORES - los probamos en la ofi por no andar gritando en casa
-BARRAS - 
+BARRAS -
 
   The circuit:
   * A connect to digital 2
@@ -23,9 +23,12 @@ BARRAS -
 
 #define SOUND_SENSOR A0
 #define SOUND_SENSOR_2 A2
-#define THRESHOLD_FAIL 200 //The threshold to turn the led on 400.00*5/1024 = 1.95v
-#define THRESHOLD_GOOD 400
-#define THRESHOLD_WIN 600
+#define THRESHOLD_EPIC_FAIL 120 //The threshold to turn the led on 400.00*5/1024 = 1.95v
+#define THRESHOLD_FAIL 220
+#define THRESHOLD_AVERAGE 380
+#define THRESHOLD_WIN 450
+#define THRESHOLD_EPIC_WIN 550
+#define THRESHOLD_GOD 800
 
 #define RowA 2
 #define RowB 3
@@ -35,13 +38,14 @@ BARRAS -
 #define R1 11
 #define CLK 13
 #define STB 10
-#define DBNORM 80
+#define DBNORM 150
 
 byte row=0;
 byte *hz;
 int sensorValue;
 int counter = 0;
-double clapMeter = 0;
+unsigned long clapMeter = 0;
+String clapPoints;
 int sensor = 0;
 int sensor_2 = 0;
 int goodClap = 0;
@@ -82,15 +86,22 @@ void loop()
 
 void showResult(){
     String phraseResult = "    ";
-    phraseResult.concat(result);
-    phraseResult.concat(": ");
-    if (result >= THRESHOLD_WIN){
-        phraseResult.concat("YOU ARE A TOTAL WINNER");
-    } else if (result >= THRESHOLD_GOOD){
-        phraseResult.concat("YOU DID IT QUITE WELL");
+    if (result >= THRESHOLD_GOD){
+        phraseResult.concat("OH GOD! YOU MUST BE NOHAYDUINO TEAM! :P");
+    } else if (result >= THRESHOLD_EPIC_WIN){
+        phraseResult.concat("FATALITY: EPIC WIN \o/");
+    } else if (result >= THRESHOLD_WIN){
+        phraseResult.concat("BRUTALITY: WIN :-)");
+    } else if (result >= THRESHOLD_AVERAGE){
+        phraseResult.concat("AVERAGITY: QUITE NORMAL :-/");        
+    } else if (result >= THRESHOLD_FAIL){
+        phraseResult.concat("FAIL! DO YOU USE MACOSX, MAYBE? u.u");        
     } else {
-        phraseResult.concat("FRAK! YOU LOST!");
+        phraseResult.concat("FRAK! EPIC FAIL! FIRED! >_<");
     }
+    phraseResult.concat(" POINTS: ");
+    clapPoints = String(clapMeter/100);
+    phraseResult.concat(clapPoints);
     phraseResult.concat("    ");
     String m;
     for(int i=0;i<phraseResult.length()-3;i++){
@@ -114,7 +125,7 @@ void showResult(){
             0x00,0x00,0x00,0x00,
             0x00,0x00,0x00,0x00,
         };
-        for(int h=0;h<10;h++){
+        for(int h=0;h<20;h++){
             for (row=0;row<16;row++){
                 // DISPLAY IN COMPLETE ROWS IN LCS
                 SPI.transfer(~(charmap[0+row*4]));
@@ -135,41 +146,37 @@ void showResult(){
 }
 
 int scanClaps(){
+    clapMeter = 0;
     boolean keep = true;
     while(keep){
-        sensor = analogRead(SOUND_SENSOR);
-        sensor_2 = analogRead(SOUND_SENSOR_2);
-        if(min(sensor,sensor_2) > 0){
-            sensorValue = max(sensor, sensor_2);
-            if(sensorValue > THRESHOLD_FAIL){
-                clapMeter = clapMeter + sensorValue;
-                goodClap++;
-                /*
-                setHistogram(sensorValue);
-                for(row=0;row<16;row++){
-                    SPI.transfer(~(hz[0+row*4]));
-                    SPI.transfer(~(hz[1+row*4]));
-                    SPI.transfer(~(hz[2+row*4]));
-                    SPI.transfer(~(hz[3+row*4]));
-
-                    digitalWrite(OE,HIGH);
-                    hc138sacn(row);
-                    digitalWrite(STB,LOW);
-                    digitalWrite(STB,HIGH);
-                    delayMicroseconds(500);
-                    digitalWrite(OE,LOW);
-                    delayMicroseconds(500);
-                }
-                */
-            } else {
-                if(badClap<5){
-                    badClap++;
-                } else {
-                    keep = false;
-                }
+        sensor = 0;
+        sensor_2 = 0;
+        int tmp1 = 0;
+        int tmp2 = 0;
+        counter = 0;
+        while(counter<5){
+            tmp1 = analogRead(SOUND_SENSOR);
+            tmp2 = analogRead(SOUND_SENSOR_2);
+            if(min(tmp1,tmp2) > 0){
+                sensor = sensor + tmp1;
+                sensor_2 = sensor_2 + tmp2;
+                counter++;
             }
-
         }
+        sensor = sensor/5;
+        sensor_2 = sensor_2/5;
+        sensorValue = max(sensor, sensor_2);
+         if(sensorValue > THRESHOLD_EPIC_FAIL){
+            clapMeter = clapMeter + sensorValue;
+            goodClap++;
+        } else {
+            if(badClap<50){
+                badClap++;
+            } else {
+                keep = false;
+            }
+        }
+
     }
 
     result = clapMeter/goodClap;
@@ -189,8 +196,8 @@ void hc138sacn(byte r){
 }
 
 void setHistogram(int value){
-     int normValue = value/DBNORM;
-     normValue = min(normValue*2,32);
+     int normValue = value/40;
+     normValue = min(normValue,16);
      if (normValue == 0){
       hz = zero;
      }
